@@ -1,5 +1,7 @@
 # Educational Institute Management System
 
+**Repository:** https://github.com/pkhokhali/School-Management-System
+
 Monorepo for a single-institute educational management platform:
 
 | Component | Stack |
