@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.env
+db.sqlite3
+media/
+staticfiles/
+
+# Node
+node_modules/
+dist/
+.env.local
+admin-portal/dist/
+
+# Backend local / caches
+backend/.pytest_cache/
+*.log
+
+# Secrets — never commit
+**/.env
+!**/.env.example
+
+# Flutter
+.dart_tool/
+build/
+*.iml
+
+# IDE
+.idea/
+.vscode/
+*.swp

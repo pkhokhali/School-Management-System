@@ -1,0 +1,10 @@
+{
+  "@@locale": "en",
+  "appTitle": "Institute App",
+  "login": "Login",
+  "dashboard": "Dashboard",
+  "attendance": "Attendance",
+  "notices": "Notices",
+  "fees": "Fees",
+  "profile": "Profile"
+}

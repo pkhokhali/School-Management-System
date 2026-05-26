@@ -1,0 +1,272 @@
+EduInstitute Student Management System
+Development Prompts & Product Recommendations
+Prepared by: Senior Product Manager  |  Date: May 2026
+ 
+Executive Summary
+This document captures 12 targeted development prompts derived from a full audit of the student-mgmt-system build documentation. Each prompt addresses a specific gap, broken workflow, or high-impact UX improvement — with clear rationale, affected modules, and copy-paste ready instructions for the engineering team.
+Prompts are organised into four priority tiers:
+Critical Gap — functionality that is broken or inaccessible in the current build
+High Value — backend already built; significant daily workflow unlocked with frontend work
+Quick Win — 1–2 hours of effort with noticeable day-to-day improvement
+UX / Polish — higher effort; transformative for daily users
+ 
+Priority Summary
+#
+Prompt Title
+Priority
+Affected Area
+1
+Add Shifts management UI in Academic Setup
+CRITICAL GAP
+Courses & Academic · Attendance · Announcements
+2
+Implement SMS announcement sending (or surface clear stub warning)
+CRITICAL GAP
+Announcements
+3
+Student timeline page — surface in admin drawer
+HIGH VALUE
+Students
+4
+Enrollment certificate download button in grid
+HIGH VALUE
+Enrollment
+5
+Fee receipt download and payment history in student drawer
+HIGH VALUE
+Fees · Students
+6
+Attendance session conflict review — add bulk action toolbar
+HIGH VALUE
+Attendance
+7
+Pre-fill enrollment number search in Fees from student drawer
+QUICK WIN
+Fees · Students
+8
+Add course capacity usage indicator in course grid
+QUICK WIN
+Courses & Academic
+9
+Empty state illustrations for all major grids
+QUICK WIN
+UX / Polish — all pages
+10
+Add global student search in top AppBar
+UX / POLISH
+UX / Polish · Students
+11
+Results approval workflow — visual status stepper
+UX / POLISH
+Results
+12
+Announcements — delivery report summary in drawer
+UX / POLISH
+Announcements
+ 
+Detailed Prompts
+1. Add Shifts management UI in Academic Setup
+CRITICAL GAP
+Areas: Courses & Academic · Attendance · Announcements
+ 
+Context: Backend + batch FK exist — zero admin UI today
+Why this matters
+Shifts are already used in announcement targeting and batch linkage, but there is no grid to create or manage them. Staff currently cannot set this up without direct database access.
+Prompt for engineering team
+In the Courses & Academic page (/courses), Tab B — Academic Setup already has columns for Departments, Academic Years, and Batches. Add a fourth column/grid called "Shifts" with the following:
+- List shifts from GET /students/shifts/ with columns: name, timing label, active status.
+- Add / Edit dialog with fields: name (text), start_time (time picker), end_time (time picker), active toggle.
+- Delete with confirmation (soft-delete or active=false).
+- The shift picker in the Batch add/edit form should populate from this list.
+- The Announcements audience panel "shift" multi-select should also source from this endpoint.
+Match the existing Department and Batch card styles exactly (same DataTable, same FormDialog pattern).
+ 
+ 
+2. Implement SMS announcement sending (or surface clear stub warning)
+CRITICAL GAP
+Areas: Announcements
+ 
+Context: Channel shown in UI — sends nothing silently
+Why this matters
+SMS is a selectable channel in the announcement form today. When a staff member selects it, nothing is sent but there is no feedback. This is a trust-breaking silent failure.
+Prompt for engineering team
+In the Announcements create/edit dialog, address the SMS channel stub in one of two ways (choose based on timeline):
+ 
+Option A — Wire a provider: Integrate a provider (e.g. Twilio or Sparrow SMS for Nepal). Backend dispatch_announcement() already creates NotificationLog rows — extend it to call the SMS API for recipients with phone numbers. Surface a delivery report count in the published announcement drawer.
+ 
+Option B — Surface the stub clearly (quick patch): When SMS is selected as a channel, show an inline warning banner: "SMS sending is not yet configured. Contact your system administrator to enable it." Disable the SMS toggle with a tooltip explaining the same. Remove SMS from the published channel chips in the grid so staff are not misled.
+ 
+Whichever option, ensure the backend NotificationLog correctly marks SMS records as 'pending_integration' rather than silently treating them as sent.
+ 
+ 
+3. Student timeline page — surface in admin drawer
+HIGH VALUE
+Areas: Students
+ 
+Context: API exists at /student-history/{id}/timeline/ — no UI
+Why this matters
+The cached timeline endpoint is built but never surfaced. This is high-value context for reception staff handling queries about a student's full history in one view.
+Prompt for engineering team
+In the Student detail drawer (DetailDrawer for /students), add a new tab called "History" alongside the existing tabs. This tab should:
+- Call GET /student-history/{student_id}/timeline/ on tab open (lazy load).
+- Render a vertical timeline with event types colour-coded: enrollments (blue), payments (green), attendance summaries (teal), results (purple), document uploads (gray).
+- Each event shows: date, event label, and a short detail line (e.g. "Paid NPR 15,000 — Tuition Fee" or "Enrolled in VTS-C000003").
+- Show a skeleton loader while fetching; show an empty state illustration if no events exist.
+- Cache the response in component state so re-opening the tab does not re-fetch.
+Use the existing PageTabs and DetailDrawer components. No new routes needed.
+ 
+ 
+4. Enrollment certificate download button in grid
+HIGH VALUE
+Areas: Enrollment
+ 
+Context: PDF endpoint exists — only accessible from drawer today
+Why this matters
+Reception staff frequently need to print enrollment certificates. Currently they must open the drawer for each student. A direct action column button saves significant repetitive clicks.
+Prompt for engineering team
+In the Enrollment data grid (/enrollment), add a Download certificate icon button to the GridActions column for rows where status === 'approved' or status === 'completed'.
+- On click: call GET /enrollment/{id}/certificate/ and trigger a browser download (filename: certificate_{enrollment_number}.pdf).
+- Show a loading spinner on the specific row's button while downloading; revert on completion or error.
+- Also add the same button inside the detail drawer footer for consistency.
+- Do NOT show the button for pending, rejected, or dropped enrollments (disable with tooltip: "Certificate available after approval").
+ 
+ 
+5. Fee receipt download and payment history in student drawer
+HIGH VALUE
+Areas: Fees · Students
+ 
+Context: Receipt endpoint exists — no direct download path in student view
+Why this matters
+Staff look up students and are immediately asked about fee status. Currently they must navigate away to /fees and re-search. Embedding a compact fee history and receipt download in the student drawer removes a painful workflow gap.
+Prompt for engineering team
+In the Student detail drawer (/students), add a "Fees" tab that:
+- Calls GET /fees/assignments/?student={id} to list all fee assignments.
+- Shows a compact table: fee head name, amount, due date, status chip (paid/partial/pending/overdue).
+- For each payment under an assignment (GET /fees/payments/?assignment={id}), show a sub-row or expandable with: payment date, amount, method, and a receipt download icon (calls the receipt PDF endpoint).
+- Shows total outstanding amount as a summary chip at the top of the tab.
+- A quick "Record payment" button that opens the existing fee payment FormDialog pre-filled with the student ID.
+Do not duplicate the full Fees page — this is a read-focused summary with one action shortcut.
+ 
+ 
+6. Attendance session conflict review — add bulk action toolbar
+HIGH VALUE
+Areas: Attendance
+ 
+Context: Conflicts tab exists — no bulk approve action
+Why this matters
+The conflicts-to-review tab shows individual records but forces one-by-one resolution. For large batches with QR sync issues this becomes unusable. A bulk-select toolbar solves the most painful teacher workflow.
+Prompt for engineering team
+In the Attendance page (/attendance), Tab "Conflicts to review":
+- Add a checkbox column to the DataGrid (MUI DataGrid built-in row selection).
+- When 1+ rows are selected, show a floating action toolbar above the grid with two buttons: "Mark all Present" and "Mark all Absent".
+- On confirm (show a small confirmation snackbar "Mark 12 records as Present?"), call POST /attendance/records/ bulk mark endpoint for selected IDs.
+- After success, remove resolved rows from the grid and show a success toast.
+- "Select all on this page" checkbox in the header should respect current filter state.
+- Keep the existing per-row Present/Absent buttons for single-record resolution.
+ 
+ 
+7. Pre-fill enrollment number search in Fees from student drawer
+QUICK WIN
+Areas: Fees · Students
+ 
+Context: Navigation gap — no cross-module context passing
+Why this matters
+When a staff member is in a student's detail drawer and clicks away to Fees, they lose context and have to re-search. A deep link with query param takes minutes to implement and removes significant friction.
+Prompt for engineering team
+When navigating from the Student detail drawer to the Fees page, pass the student's enrollment number as a query param: /fees?student=VTS-S000001.
+ 
+On the Fees page (/fees), Tab "Student assignments":
+- On mount, read the student query param from the URL.
+- If present, pre-populate the search/filter field and auto-trigger the filter so results show immediately.
+- Highlight the student name in the page header: "Fees — VTS-S000001 · John Doe" with a clear/reset link.
+ 
+This requires: (1) a "View fees" shortcut button in the student drawer, (2) useSearchParams in the Fees page component to read and apply the filter on mount.
+ 
+ 
+8. Add course capacity usage indicator in course grid
+QUICK WIN
+Areas: Courses & Academic
+ 
+Context: max_enrollment field exists — not shown anywhere in the UI
+Why this matters
+Admissions staff need to know at a glance which courses are near capacity before creating new enrollments. The data is already on the model.
+Prompt for engineering team
+In the Courses grid (/courses Tab A), add a "Capacity" column after the existing credits/fee columns:
+- Display as a compact progress bar + fraction: e.g. [████░░] 34/50.
+- Color coding: green (< 70% full), amber (70–90%), red (>90% or full).
+- Derive enrolled count from the enrollment ViewSet — add a GET /courses/{id}/enrollment_count/ action on the backend (or annotate the list queryset with a Count annotation so it returns in the list response as enrolled_count).
+- Tooltip on hover: "34 enrolled of 50 max capacity".
+- Sort the column by % filled descending as default for the capacity column sort.
+ 
+ 
+9. Empty state illustrations for all major grids
+QUICK WIN
+Areas: UX / Polish — all pages
+ 
+Context: MUI DataGrid shows blank space — no guidance for users
+Why this matters
+New installs and filtered-to-zero states show nothing. Empty states are a quick UX win that reduce confusion and guide next actions.
+Prompt for engineering team
+Add consistent empty state components to all DataTable instances across: Students, Courses, Enrollment, Attendance (both tabs), Fees (all three tabs), Users, Results.
+ 
+Each empty state should have:
+- A simple inline SVG icon (use an appropriate Tabler icon at 48px, muted color).
+- A heading: e.g. "No students yet" / "No sessions this week".
+- A sub-line with a contextual next-action hint: e.g. "Add your first student to get started" with a link/button to the Add action.
+- When a search or filter is active and returns zero results, the sub-line should instead read: "No results for '[filter term]' — try clearing the filter."
+ 
+Create a reusable <EmptyState icon, title, subtitle, action? /> component and replace the current blank DataGrid slots.
+ 
+ 
+10. Add global student search in top AppBar
+UX / POLISH
+Areas: UX / Polish · Students
+ 
+Context: No cross-page search — navigation is menu-only today
+Why this matters
+Reception staff constantly jump between a student's enrollment, fees, and attendance. A persistent search bar in the AppBar that deep-links to the student drawer from anywhere in the app is the single highest-impact UX improvement for daily users.
+Prompt for engineering team
+Add a global search input to the top AppBar (DashboardLayout.tsx), positioned between the menu toggle and the dark mode icon.
+- Triggered by clicking a search icon or pressing Cmd/Ctrl+K — opens a modal command palette overlay.
+- Searches GET /students/?search={query} as the user types (300ms debounce).
+- Results show student name, enrollment number, and batch in a dropdown list.
+- Clicking a result navigates to /students and opens that student's DetailDrawer directly (pass studentId via URL param or navigation state).
+- Keyboard navigation: arrow keys to move through results, Enter to select, Escape to close.
+- Future extension: also search courses and announcements (add a type filter chip: Students / Courses / Announcements).
+Use a MUI Modal + TextField + List pattern. Keep the input width at 280px when expanded.
+ 
+ 
+11. Results approval workflow — visual status stepper
+UX / POLISH
+Areas: Results
+ 
+Context: Multi-step approval exists — no visual progress indicator
+Why this matters
+The results approval chain (teacher → hod → admin → published) has multiple steps but the admin UI shows only a status field. A stepper makes the current stage and next action immediately clear, reducing 'where is this stuck?' support queries.
+Prompt for engineering team
+In the Results detail view / drawer, replace the plain status text with a horizontal stepper showing the approval chain stages: Submitted → Teacher approved → HOD approved → Admin approved → Published.
+- Completed stages: filled check icon, muted text.
+- Current stage: filled circle with primary color, bold label, and a visible action button (e.g. "Approve" or "Send back").
+- Future stages: empty circle, tertiary text.
+- If the logged-in role can act on the current stage, show the action button inline in the stepper.
+- Fetch current approval state from GET /results/approvals/?exam_id= and map stage codes to step indices.
+Use MUI Stepper component with custom StepIcon. Keep the stepper compact (horizontal, no connectors wider than 1px).
+ 
+ 
+12. Announcements — delivery report summary in drawer
+UX / POLISH
+Areas: Announcements
+ 
+Context: NotificationLog rows created — never surfaced to staff
+Why this matters
+Staff publish announcements but have no idea if they were seen. Even a simple read-count summary per channel (Web: 142 sent / 38 read) builds trust in the feature.
+Prompt for engineering team
+In the Announcement detail drawer (published announcements only), add a "Delivery report" section below the existing details:
+- Per channel (Web, Mobile, Email), show: recipients count, delivered count, read/opened count (if available in NotificationLog).
+- Display as a compact 3-column stat row: channel icon | sent | read.
+- Call a new GET /announcements/{id}/delivery-report/ endpoint (backend: aggregate NotificationLog by channel + status for the announcement).
+- Show a skeleton loader; if the endpoint returns no data, show "Delivery data not yet available."
+- For draft/scheduled announcements, hide this section entirely.
+Keep this section collapsible (MUI Accordion) so it does not push important content below the fold.
+ 
+ 
