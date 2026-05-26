@@ -198,7 +198,8 @@ class _AttendanceScanScreenState extends ConsumerState<AttendanceScanScreen> {
               : _classes.isEmpty
                   ? const Text('No classes assigned for today. Contact academic office.')
                   : DropdownButtonFormField<int>(
-                      value: _sessionId,
+                      key: ValueKey(_sessionId),
+                      initialValue: _sessionId,
                       decoration: const InputDecoration(
                         labelText: 'Class register (today)',
                         border: OutlineInputBorder(),

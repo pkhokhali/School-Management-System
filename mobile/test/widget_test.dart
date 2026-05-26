@@ -6,7 +6,11 @@ void main() {
   test('offline queue stores record', () async {
     await Hive.initFlutter();
     await Hive.openBox('offline_attendance');
-    await OfflineSync.queueRecord(1, 'STU:1:abc', 'present');
+    await OfflineSync.queueRecord(
+      sessionId: 1,
+      payload: 'STU:1:abc',
+      status: 'present',
+    );
     expect(Hive.box('offline_attendance').isNotEmpty, true);
   });
 }

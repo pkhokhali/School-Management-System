@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/api/api_client.dart';
 import '../../core/providers/auth_provider.dart';
-import '../../core/providers/feature_provider.dart';
 import 'notices_screen.dart';
 import 'fees_screen.dart';
 import 'qr_display_screen.dart';
@@ -20,7 +18,6 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    final flags = ref.watch(featureFlagsProvider).valueOrNull;
     final pages = [
       const _OverviewTab(),
       const NoticesScreen(),

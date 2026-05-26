@@ -16,11 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: main
-
-      - name: Verify source (must not use const ListView)
-        run: grep -n "const ListView" mobile/lib/features/teacher/teacher_dashboard.dart && exit 1 || echo "OK — no const ListView"
 
       - uses: subosito/flutter-action@v2
         with:
@@ -30,6 +25,10 @@ jobs:
       - name: Install dependencies
         working-directory: mobile
         run: flutter pub get
+
+      - name: Analyze Dart (lib + test)
+        working-directory: mobile
+        run: flutter analyze --no-fatal-infos
 
       - name: Build debug APK
         working-directory: mobile

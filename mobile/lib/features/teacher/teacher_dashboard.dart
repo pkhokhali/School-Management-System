@@ -45,16 +45,16 @@ class _TeacherHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(16),
-      children: [
+      children: const [
         ListTile(
-          title: const Text('Mark Attendance'),
-          subtitle: const Text(
+          title: Text('Mark Attendance'),
+          subtitle: Text(
             'Scan tab: pick your class (batch · course · period), scan QR. Registers open automatically.',
           ),
         ),
         ListTile(
-          title: const Text('Enter Marks'),
-          subtitle: const Text('Results module when enabled'),
+          title: Text('Enter Marks'),
+          subtitle: Text('Results module when enabled'),
         ),
       ],
     );
