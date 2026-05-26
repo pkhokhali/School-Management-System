@@ -86,9 +86,10 @@ class Command(BaseCommand):
             'parent_portal': True,
         })
         solo.feature_flags = flags
+        solo.role_channel_access = settings.DEFAULT_ROLE_CHANNEL_ACCESS
         solo.name = 'Valley Technical School (Demo)'
-        solo.save(update_fields=['feature_flags', 'name'])
-        self.stdout.write('  Feature flags enabled for portal testing.')
+        solo.save(update_fields=['feature_flags', 'role_channel_access', 'name'])
+        self.stdout.write('  Feature flags and mobile/web channel access enabled for demo roles.')
 
     def _load_context(self):
         return {

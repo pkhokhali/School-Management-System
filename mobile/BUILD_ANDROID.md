@@ -72,10 +72,15 @@ Docker must expose port 8000 on the host.
 | Check | Detail |
 |-------|--------|
 | Same Wi‑Fi | Phone and PC |
+| Backend | `python manage.py runserver 0.0.0.0:8000` (not only `127.0.0.1`) |
+| `.env` | `DEBUG=True` or `ALLOW_LAN_ACCESS=True` so Django accepts your LAN IP |
+| Wrong API in APK? | Open app → **Server settings** → enter `http://YOUR_PC_IP:8000/api/v1` → **Test server** |
 | Docker | `docker compose up` in `docker/` |
 | API test | Phone browser → `http://YOUR_PC_IP:8000/api/v1/features/` |
 | Firewall | Allow TCP **8000** on private network |
 | Login | `student1@institute.edu.np` / `student123` |
+
+**Note:** `10.0.2.2` only works on the Android **emulator**, not on a physical phone.
 
 ---
 

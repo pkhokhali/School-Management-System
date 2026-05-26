@@ -11,6 +11,9 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = env('SECRET_KEY', default='dev-secret-key-change-in-production')
 DEBUG = env.bool('DEBUG', default=True)
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', 'backend'])
+# Allow phones on the same Wi‑Fi to call the API (Host header = your LAN IP).
+if DEBUG or env.bool('ALLOW_LAN_ACCESS', default=False):
+    ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',

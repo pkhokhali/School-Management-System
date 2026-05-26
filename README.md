@@ -30,7 +30,7 @@ pip install -r requirements.txt
 copy .env.example .env
 python manage.py migrate
 python manage.py seed_all
-python manage.py runserver
+python manage.py runserver 0.0.0.0:8000
 ```
 
 API: http://127.0.0.1:8000/api/v1/  

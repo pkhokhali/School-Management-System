@@ -1,17 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/api_base_url_provider.dart';
 import '../storage/secure_storage.dart';
 
-const baseUrl = String.fromEnvironment(
-  'API_BASE_URL',
-  defaultValue: 'http://10.0.2.2:8000/api/v1',
-);
-
-final dioProvider = Provider<Dio>((ref) {
+Dio createDio(String baseUrl) {
   final dio = Dio(BaseOptions(
     baseUrl: baseUrl,
     connectTimeout: const Duration(seconds: 15),
     receiveTimeout: const Duration(seconds: 15),
+    headers: {'Content-Type': 'application/json'},
   ));
 
   dio.interceptors.add(InterceptorsWrapper(
@@ -27,8 +24,9 @@ final dioProvider = Provider<Dio>((ref) {
         final refresh = await SecureStorage.getRefreshToken();
         if (refresh != null) {
           try {
-            final res = await Dio().post(
-              '$baseUrl/auth/token/refresh/',
+            final refreshDio = Dio(BaseOptions(baseUrl: baseUrl));
+            final res = await refreshDio.post(
+              '/auth/token/refresh/',
               data: {'refresh': refresh},
             );
             await SecureStorage.saveTokens(
@@ -49,4 +47,9 @@ final dioProvider = Provider<Dio>((ref) {
   ));
 
   return dio;
+}
+
+final dioProvider = Provider<Dio>((ref) {
+  final baseUrl = ref.watch(apiBaseUrlProvider);
+  return createDio(baseUrl);
 });
