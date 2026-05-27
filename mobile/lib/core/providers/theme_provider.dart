@@ -8,7 +8,7 @@ final darkModeProvider = StateNotifierProvider<DarkModeNotifier, bool>((ref) {
 class DarkModeNotifier extends StateNotifier<bool> {
   DarkModeNotifier() : super(false) {
     final box = Hive.box('settings');
-    state = box.get('dark_mode', defaultValue: false);
+    state = box.get('dark_mode', defaultValue: true);
   }
 
   void toggle() {
