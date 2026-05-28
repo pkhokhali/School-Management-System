@@ -41,6 +41,7 @@ import { useFeatureStore } from '../store/featureStore'
 import { usePermissions } from '../hooks/usePermissions'
 import type { ModuleKey } from '../config/permissions'
 import GlobalStudentSearch from '../components/GlobalStudentSearch'
+import { instituteBrand } from '../theme/instituteBrand'
 
 const DRAWER_WIDTH = 260
 
@@ -110,11 +111,10 @@ export default function DashboardLayout() {
         elevation={0}
         sx={{
           zIndex: (t) => t.zIndex.drawer + 1,
-          bgcolor: 'background.paper',
-          color: 'text.primary',
+          bgcolor: darkMode ? instituteBrand.navy : 'background.paper',
+          color: darkMode ? '#fff' : 'text.primary',
           borderBottom: 1,
           borderColor: 'divider',
-          backdropFilter: 'blur(12px)',
         }}
       >
         <Toolbar sx={{ gap: 1 }}>
@@ -126,7 +126,7 @@ export default function DashboardLayout() {
             fontWeight={700}
             sx={{ display: { xs: 'none', md: 'block' }, fontFamily: '"Outfit", sans-serif' }}
           >
-            EduInstitute Admin
+            Institute Admin
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
           <GlobalStudentSearch />
@@ -176,7 +176,8 @@ export default function DashboardLayout() {
             top: 64,
             height: 'calc(100vh - 64px)',
             border: 'none',
-            bgcolor: 'background.paper',
+            bgcolor: instituteBrand.navy,
+            color: '#fff',
             display: 'flex',
             flexDirection: 'column',
           },
@@ -189,7 +190,7 @@ export default function DashboardLayout() {
                 width: 42,
                 height: 42,
                 borderRadius: 2,
-                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, #8b5cf6 100%)`,
+                background: `linear-gradient(135deg, ${instituteBrand.indigo} 0%, #5b21b6 100%)`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -202,10 +203,10 @@ export default function DashboardLayout() {
               E
             </Box>
             <Box>
-              <Typography variant="subtitle1" fontWeight={700} lineHeight={1.2}>
+              <Typography variant="subtitle1" fontWeight={700} lineHeight={1.2} sx={{ color: '#fff' }}>
                 EduInstitute
               </Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>
                 {isSuperAdmin ? 'Full access' : 'Admin portal'}
               </Typography>
             </Box>
@@ -224,9 +225,7 @@ export default function DashboardLayout() {
                 selected={isActive(item.path)}
                 onClick={() => navigate(item.path)}
               >
-                <ListItemIcon sx={{ minWidth: 40, color: isActive(item.path) ? 'primary.main' : 'text.secondary' }}>
-                  {item.icon}
-                </ListItemIcon>
+                <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
                 <ListItemText
                   primary={item.tKey ? t(item.tKey) : item.label}
                   primaryTypographyProps={{ fontWeight: isActive(item.path) ? 600 : 500, fontSize: '0.9rem' }}

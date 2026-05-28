@@ -5,7 +5,7 @@ import 'screens/student_fees_tab.dart';
 import 'screens/student_home_tab.dart';
 import 'screens/student_profile_tab.dart';
 import 'screens/student_results_tab.dart';
-import 'screens/student_study_hub_tab.dart';
+import 'screens/student_schedule_tab.dart';
 import 'widgets/student_scaffold.dart';
 import '../../core/theme/student_palette.dart';
 
@@ -19,12 +19,14 @@ class StudentDashboard extends ConsumerStatefulWidget {
 class _StudentDashboardState extends ConsumerState<StudentDashboard> {
   int _index = 0;
 
-  void _openProfile() {
+  void _goToTab(int i) => setState(() => _index = i);
+
+  void _openFees() {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => const Scaffold(
-          backgroundColor: StudentPalette.profileBg,
-          body: SafeArea(child: StudentProfileTab()),
+          backgroundColor: StudentPalette.surface,
+          body: SafeArea(child: StudentFeesTab()),
         ),
       ),
     );
@@ -33,17 +35,20 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
   @override
   Widget build(BuildContext context) {
     final pages = [
-      StudentHomeTab(onNavigate: (i) => setState(() => _index = i), onProfileTap: _openProfile),
+      StudentHomeTab(
+        onNavigate: _goToTab,
+        onOpenFees: _openFees,
+        onProfileTap: () => _goToTab(4),
+      ),
       const StudentCoursesTab(),
-      const StudentFeesTab(),
+      const StudentScheduleTab(),
       const StudentResultsTab(),
-      const StudentStudyHubTab(),
+      const StudentProfileTab(),
     ];
 
     return StudentShell(
       selectedIndex: _index,
-      onTabSelected: (i) => setState(() => _index = i),
-      onProfileTap: _openProfile,
+      onTabSelected: _goToTab,
       body: IndexedStack(index: _index, children: pages),
     );
   }

@@ -19,7 +19,7 @@ class StudentProfileTab extends ConsumerWidget {
     final marks = ref.watch(studentMarksProvider);
 
     return profile.when(
-      loading: () => const Center(child: CircularProgressIndicator(color: StudentPalette.teal)),
+      loading: () => const Center(child: CircularProgressIndicator(color: StudentPalette.indigo)),
       error: (e, _) => Center(child: Text('Error: $e')),
       data: (p) {
         final markList = marks.valueOrNull ?? [];
@@ -28,40 +28,24 @@ class StudentProfileTab extends ConsumerWidget {
         final roll = p?['enrollment_number']?.toString() ?? '';
         final batch = p?['batch_name']?.toString() ?? '';
 
-        return ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              children: [
-                const Expanded(
-                  child: Text(
-                    'My Profile',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: StudentPalette.profileText),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE1F5EE),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text('Active', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF0F6E56))),
-                ),
-              ],
+            StudentNavyHeader(
+              title: name,
+              subtitle: '$batch · $roll',
+              trailing: const StudentPill('Active', type: StudentPillType.green),
             ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-              ),
+            Expanded(
+              child: ListView(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
+          children: [
+            StudentCard(
               child: Row(
                 children: [
                   CircleAvatar(
                     radius: 28,
-                    backgroundColor: StudentPalette.teal,
+                    backgroundColor: StudentPalette.indigo,
                     child: Text(
                       initials(name),
                       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white),
@@ -88,14 +72,7 @@ class StudentProfileTab extends ConsumerWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-              ),
+            StudentCard(
               child: Row(
                 children: [
                   _profileStat('${markList.isEmpty ? "—" : "87%"}', 'Attendance'),
@@ -135,13 +112,13 @@ class StudentProfileTab extends ConsumerWidget {
               title: const Text('Dark mode', style: TextStyle(color: StudentPalette.profileText)),
               subtitle: const Text('Home & tabs use dark theme', style: TextStyle(color: StudentPalette.profileMuted)),
               value: dark,
-              activeColor: StudentPalette.teal,
+              activeColor: StudentPalette.indigo,
               onChanged: (_) => ref.read(darkModeProvider.notifier).toggle(),
             ),
             ListTile(
               title: const Text('Server settings', style: TextStyle(color: StudentPalette.profileText)),
               subtitle: Text(user?.email ?? '', style: const TextStyle(color: StudentPalette.profileMuted)),
-              trailing: const Icon(Icons.chevron_right, color: StudentPalette.teal),
+              trailing: const Icon(Icons.chevron_right, color: StudentPalette.indigo),
               onTap: () => context.push('/profile'),
             ),
             ListTile(
@@ -150,6 +127,9 @@ class StudentProfileTab extends ConsumerWidget {
                 await ref.read(authProvider.notifier).logout();
                 if (context.mounted) context.go('/login');
               },
+            ),
+          ],
+        ),
             ),
           ],
         );
@@ -169,7 +149,7 @@ class StudentProfileTab extends ConsumerWidget {
     return Expanded(
       child: Column(
         children: [
-          Text(v, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: StudentPalette.teal)),
+          Text(v, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: StudentPalette.indigo)),
           Text(l, style: const TextStyle(fontSize: 11, color: StudentPalette.profileMuted)),
         ],
       ),
@@ -193,7 +173,7 @@ class StudentProfileTab extends ConsumerWidget {
             ),
             child: Row(
               children: [
-                Icon(icon, size: 22, color: StudentPalette.teal),
+                Icon(icon, size: 22, color: StudentPalette.indigo),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -204,7 +184,7 @@ class StudentProfileTab extends ConsumerWidget {
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right, color: StudentPalette.teal, size: 20),
+                const Icon(Icons.chevron_right, color: StudentPalette.indigo, size: 20),
               ],
             ),
           ),

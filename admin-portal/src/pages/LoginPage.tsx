@@ -22,6 +22,7 @@ import { z } from 'zod'
 import { toast } from 'sonner'
 import api from '../api/client'
 import { useAuthStore } from '../store/authStore'
+import { instituteBrand, navyGradient } from '../theme/instituteBrand'
 
 const schema = z.object({
   email: z.string().email(),
@@ -63,7 +64,7 @@ export default function LoginPage() {
         sx={{
           display: { xs: 'none', md: 'flex' },
           flex: 1,
-          background: `linear-gradient(160deg, ${primary} 0%, #4f46e5 40%, #7c3aed 100%)`,
+          background: navyGradient,
           color: '#fff',
           flexDirection: 'column',
           justifyContent: 'center',

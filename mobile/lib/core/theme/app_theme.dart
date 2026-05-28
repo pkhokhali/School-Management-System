@@ -5,30 +5,36 @@ class AppTheme {
   static final light = ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(
-      seedColor: StudentPalette.teal,
+      seedColor: StudentPalette.indigo,
       brightness: Brightness.light,
+      primary: StudentPalette.indigo,
     ),
-    scaffoldBackgroundColor: StudentPalette.profileBg,
+    scaffoldBackgroundColor: StudentPalette.surface,
+    appBarTheme: const AppBarTheme(
+      backgroundColor: StudentPalette.navy,
+      foregroundColor: Colors.white,
+      elevation: 0,
+    ),
   );
 
   static final dark = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
-    scaffoldBackgroundColor: StudentPalette.bgDark,
+    scaffoldBackgroundColor: StudentPalette.navy,
     colorScheme: ColorScheme.fromSeed(
-      seedColor: StudentPalette.teal,
+      seedColor: StudentPalette.indigo,
       brightness: Brightness.dark,
-      primary: StudentPalette.mint,
-      surface: StudentPalette.bgDark,
+      primary: StudentPalette.indigo,
+      surface: StudentPalette.navy,
     ),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: StudentPalette.bgDark,
-      indicatorColor: StudentPalette.teal.withValues(alpha: 0.25),
+      backgroundColor: StudentPalette.white,
+      indicatorColor: StudentPalette.indigo.withValues(alpha: 0.12),
       labelTextStyle: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const TextStyle(color: StudentPalette.mint, fontSize: 12);
+          return const TextStyle(color: StudentPalette.indigo, fontSize: 12, fontWeight: FontWeight.w600);
         }
-        return TextStyle(color: Colors.white.withValues(alpha: 0.45), fontSize: 12);
+        return const TextStyle(color: StudentPalette.textMuted, fontSize: 12);
       }),
     ),
   );

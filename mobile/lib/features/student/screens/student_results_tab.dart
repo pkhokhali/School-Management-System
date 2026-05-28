@@ -12,15 +12,19 @@ class StudentResultsTab extends ConsumerWidget {
     final marks = ref.watch(studentMarksProvider);
 
     return marks.when(
-      loading: () => const Center(child: CircularProgressIndicator(color: StudentPalette.mint)),
+      loading: () => const Center(child: CircularProgressIndicator(color: StudentPalette.indigo)),
       error: (e, _) => Center(child: Text('Error: $e')),
       data: (list) {
         if (list.isEmpty) {
-          return const Center(
-            child: Text(
-              'No published results yet',
-              style: TextStyle(color: StudentPalette.textMuted),
-            ),
+          return const Column(
+            children: [
+              StudentNavyHeader(title: 'Results', subtitle: 'Published marks'),
+              Expanded(
+                child: Center(
+                  child: Text('No published results yet', style: TextStyle(color: StudentPalette.textMuted)),
+                ),
+              ),
+            ],
           );
         }
 
@@ -43,130 +47,87 @@ class StudentResultsTab extends ConsumerWidget {
           bySubject[key] = m;
         }
 
-        return RefreshIndicator(
-          color: StudentPalette.mint,
-          onRefresh: () async => ref.invalidate(studentMarksProvider),
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-            children: [
-              Row(
-                children: [
-                  const Expanded(
-                    child: Text(
-                      'My Results',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: StudentPalette.textPrimary),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF22C55E).withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '$term',
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF4ADE80)),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: StudentPalette.teal.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            StudentNavyHeader(
+              title: 'Results',
+              subtitle: '$term · Summary',
+              stats: [
+                (value: gpa > 0 ? gpa.toStringAsFixed(1) : '—', label: 'GPA', valueColor: null),
+                (value: '${avgPct.round()}%', label: 'Avg', valueColor: const Color(0xFF4ADE80)),
+                (value: '${bySubject.length}', label: 'Subjects', valueColor: null),
+              ],
+            ),
+            Expanded(
+              child: RefreshIndicator(
+                color: StudentPalette.indigo,
+                onRefresh: () async => ref.invalidate(studentMarksProvider),
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
                   children: [
-                    Text(
-                      '$term · Summary',
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
-                    ),
-                    const SizedBox(height: 12),
+                    const StudentSectionHeader(title: 'Subject breakdown'),
+                    ...bySubject.entries.map((e) {
+                      final m = e.value;
+                      final grade = m['grade']?.toString() ?? '—';
+                      return StudentCard(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(e.key, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                                  Text(
+                                    'Internal ${m['internal_marks']} · Final ${m['external_marks']}',
+                                    style: const TextStyle(fontSize: 10, color: StudentPalette.textMuted),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  grade,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                    color: grade == 'F' ? StudentPalette.error : StudentPalette.success,
+                                  ),
+                                ),
+                                Text(
+                                  '${m['total_marks']}/100',
+                                  style: const TextStyle(fontSize: 10, color: StudentPalette.textMuted),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
                     Row(
                       children: [
-                        _stat('GPA', gpa > 0 ? gpa.toStringAsFixed(1) : '—'),
-                        _stat('Avg', '${avgPct.round()}%'),
-                        _stat('Subjects', '${bySubject.length}'),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('PDF download — use admin portal marksheet')),
+                              );
+                            },
+                            icon: const Icon(Icons.download, size: 18, color: StudentPalette.indigo),
+                            label: const Text('Download PDF', style: TextStyle(color: StudentPalette.indigo)),
+                          ),
+                        ),
                       ],
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
-              const StudentSectionTitle('Subject breakdown'),
-              ...bySubject.entries.map((e) {
-                final m = e.value;
-                final grade = m['grade']?.toString() ?? '—';
-                final internal = m['internal_marks'];
-                final external = m['external_marks'];
-                final total = m['total_marks'];
-                return StudentDarkRow(
-                  icon: Icons.grade_outlined,
-                  iconBg: const Color(0xFF22C55E).withValues(alpha: 0.25),
-                  title: e.key,
-                  subtitle: 'Internal $internal · Final $external',
-                  trailing: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        grade,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: grade == 'F' ? const Color(0xFFF87171) : const Color(0xFF4ADE80),
-                        ),
-                      ),
-                      Text(
-                        '$total/100',
-                        style: const TextStyle(fontSize: 11, color: StudentPalette.textMuted),
-                      ),
-                    ],
-                  ),
-                );
-              }),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('PDF download — use admin portal marksheet for now')),
-                        );
-                      },
-                      icon: const Icon(Icons.download, size: 18, color: Color(0xFF4ADE80)),
-                      label: const Text('Download PDF', style: TextStyle(color: Color(0xFF4ADE80))),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.share, size: 18, color: Color(0xFF67E8F9)),
-                      label: const Text('Share', style: TextStyle(color: Color(0xFF67E8F9))),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+            ),
+          ],
         );
       },
-    );
-  }
-
-  Widget _stat(String label, String value) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: const TextStyle(fontSize: 11, color: StudentPalette.textMuted)),
-          Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white)),
-        ],
-      ),
     );
   }
 }

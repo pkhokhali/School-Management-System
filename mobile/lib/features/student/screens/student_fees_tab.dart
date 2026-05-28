@@ -14,7 +14,7 @@ class StudentFeesTab extends ConsumerWidget {
     final fees = ref.watch(studentFeesProvider);
 
     return fees.when(
-      loading: () => const Center(child: CircularProgressIndicator(color: StudentPalette.mint)),
+      loading: () => const Center(child: CircularProgressIndicator(color: StudentPalette.indigo)),
       error: (e, _) => Center(child: Text('Error: $e')),
       data: (list) {
         var due = 0.0;
@@ -32,141 +32,113 @@ class StudentFeesTab extends ConsumerWidget {
         }
         final pctPaid = total > 0 ? (paid / total * 100).clamp(0, 100) : 0.0;
 
-        return RefreshIndicator(
-          color: StudentPalette.mint,
-          onRefresh: () async => ref.invalidate(studentFeesProvider),
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-            children: [
-              const Text(
-                'Fees & Payments',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: StudentPalette.textPrimary),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            StudentNavyHeader(
+              title: '₹ ${due.toStringAsFixed(0)}',
+              subtitle: total > 0
+                  ? 'Outstanding · ${pctPaid.round()}% paid of ₹${total.toStringAsFixed(0)}'
+                  : 'Fees & payments',
+              trailing: Navigator.canPop(context)
+                  ? IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.arrow_back, color: Colors.white70),
+                    )
+                  : null,
+              stats: [
+                (value: '₹${paid.toStringAsFixed(0)}', label: 'Paid', valueColor: const Color(0xFF4ADE80)),
+                (value: '₹${due.toStringAsFixed(0)}', label: 'Due', valueColor: const Color(0xFFF87171)),
+                (
+                  value: nearestDue != null ? nearestDue!.split('-').skip(1).join('/') : '—',
+                  label: 'Deadline',
+                  valueColor: const Color(0xFFFBBF24),
+                ),
+              ],
+            ),
+            if (due > 0 && nearestDue != null)
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 14),
+                child: StudentAlertBanner(
+                  title: 'Fee deadline approaching',
+                  subtitle: 'Late fee may apply after due date',
+                ),
               ),
-              const SizedBox(height: 12),
-              if (due > 0 && nearestDue != null)
-                Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.warning_amber_rounded, color: Color(0xFFF87171), size: 22),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Fee deadline approaching',
-                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFFF87171)),
-                            ),
-                            Text(
-                              'Due date: $nearestDue',
-                              style: const TextStyle(fontSize: 11, color: StudentPalette.textMuted),
-                            ),
-                          ],
-                        ),
+            Expanded(
+              child: RefreshIndicator(
+                color: StudentPalette.indigo,
+                onRefresh: () async => ref.invalidate(studentFeesProvider),
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
+                  children: [
+                    const StudentSectionHeader(title: 'Breakdown'),
+                    if (list.isEmpty)
+                      const Text('No fee assignments', style: TextStyle(color: StudentPalette.textMuted))
+                    else
+                      ...list.map((f) {
+                        final bal = double.tryParse('${f['balance']}') ?? 0;
+                        final status = f['status']?.toString() ?? '';
+                        final pill = bal <= 0
+                            ? const StudentPill('Paid ✓', type: StudentPillType.green)
+                            : status.contains('partial')
+                                ? const StudentPill('Partial', type: StudentPillType.amber)
+                                : const StudentPill('Due', type: StudentPillType.red);
+                        return StudentCard(
+                          child: Row(
+                            children: [
+                              StudentIconBox(
+                                icon: bal <= 0 ? Icons.check : Icons.receipt_long_outlined,
+                                bg: bal <= 0 ? StudentPalette.successBg : StudentPalette.errorBg,
+                                iconColor: bal <= 0 ? StudentPalette.success : StudentPalette.error,
+                                size: 28,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      f['fee_head_name']?.toString() ?? 'Fee',
+                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                                    ),
+                                    Text(
+                                      f['due_date']?.toString() ?? status,
+                                      style: const TextStyle(fontSize: 10, color: StudentPalette.textMuted),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    '₹${(f['net_amount'] ?? f['total_amount']).toString()}',
+                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+                                  ),
+                                  pill,
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    if (online && due > 0) ...[
+                      const SizedBox(height: 8),
+                      StudentPrimaryButton(
+                        label: 'Pay via Fonepay',
+                        icon: Icons.phone_android,
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Fonepay — connect gateway in admin settings')),
+                          );
+                        },
                       ),
                     ],
-                  ),
-                ),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: StudentPalette.teal.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Total Due', style: TextStyle(fontSize: 11, color: StudentPalette.textMuted)),
-                            Text(
-                              'NPR ${due.toStringAsFixed(0)}',
-                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Colors.white),
-                            ),
-                          ],
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            const Text('Paid', style: TextStyle(fontSize: 11, color: StudentPalette.textMuted)),
-                            Text(
-                              'NPR ${paid.toStringAsFixed(0)}',
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF4ADE80)),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    StudentProgressBar(percent: pctPaid.toDouble(), color: StudentPalette.mint),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${pctPaid.round()}% of fees paid',
-                      style: const TextStyle(fontSize: 11, color: StudentPalette.textMuted),
-                    ),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
-              const StudentSectionTitle('Breakdown'),
-              if (list.isEmpty)
-                const Text('No fee assignments', style: TextStyle(color: StudentPalette.textMuted))
-              else
-                ...list.map((f) {
-                  final bal = double.tryParse('${f['balance']}') ?? 0;
-                  final status = f['status']?.toString() ?? '';
-                  final chip = bal <= 0
-                      ? const StudentStatusChip('Paid', color: Color(0xFF4ADE80), bg: Color(0x3322C55E))
-                      : status.contains('partial')
-                          ? const StudentStatusChip('Part', color: Color(0xFFFBBF24), bg: Color(0x33F0A500))
-                          : const StudentStatusChip('Due', color: Color(0xFFF87171), bg: Color(0x33EF4444));
-                  return StudentDarkRow(
-                    icon: Icons.receipt_long_outlined,
-                    iconBg: StudentPalette.teal.withValues(alpha: 0.25),
-                    title: f['fee_head_name']?.toString() ?? 'Fee',
-                    subtitle: f['due_date']?.toString() ?? status,
-                    trailing: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        chip,
-                        Text(
-                          'NPR ${(f['net_amount'] ?? f['total_amount']).toString()}',
-                          style: const TextStyle(fontSize: 11, color: StudentPalette.textMuted),
-                        ),
-                      ],
-                    ),
-                  );
-                }),
-              if (online && due > 0) ...[
-                const SizedBox(height: 12),
-                FilledButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Fonepay — connect gateway in admin settings')),
-                    );
-                  },
-                  style: FilledButton.styleFrom(
-                    backgroundColor: StudentPalette.mint,
-                    foregroundColor: StudentPalette.bgDark,
-                    minimumSize: const Size.fromHeight(48),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: const Text('Pay Now via Fonepay  →', style: TextStyle(fontWeight: FontWeight.w700)),
-                ),
-              ],
-            ],
-          ),
+            ),
+          ],
         );
       },
     );

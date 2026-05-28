@@ -15,7 +15,7 @@ class StudentStudyHubTab extends ConsumerWidget {
     final enrollments = ref.watch(studentEnrollmentsProvider);
 
     return marks.when(
-      loading: () => const Center(child: CircularProgressIndicator(color: StudentPalette.mint)),
+      loading: () => const Center(child: CircularProgressIndicator(color: StudentPalette.indigo)),
       error: (e, _) => Center(child: Text('Error: $e')),
       data: (markList) {
         final examList = exams.valueOrNull ?? [];
@@ -39,7 +39,7 @@ class StudentStudyHubTab extends ConsumerWidget {
         final upcoming = examList.take(3).toList();
 
         return RefreshIndicator(
-          color: StudentPalette.mint,
+          color: StudentPalette.indigo,
           onRefresh: () async {
             ref.invalidate(studentMarksProvider);
             ref.invalidate(studentExamsProvider);
@@ -130,7 +130,7 @@ class StudentStudyHubTab extends ConsumerWidget {
               const SizedBox(height: 16),
               StudentDarkRow(
                 icon: Icons.calculate_outlined,
-                iconBg: StudentPalette.teal.withValues(alpha: 0.3),
+                iconBg: StudentPalette.indigo.withValues(alpha: 0.3),
                 title: 'Attendance calculator',
                 subtitle: 'How many more classes to reach 75%?',
                 trailing: const Icon(Icons.chevron_right, color: StudentPalette.textMuted),
@@ -149,7 +149,7 @@ class StudentStudyHubTab extends ConsumerWidget {
     final colors = [
       (bg: Colors.red.withValues(alpha: 0.12), border: Colors.red.withValues(alpha: 0.3), text: const Color(0xFFF87171)),
       (bg: Colors.amber.withValues(alpha: 0.12), border: Colors.amber.withValues(alpha: 0.3), text: const Color(0xFFFBBF24)),
-      (bg: StudentPalette.teal.withValues(alpha: 0.12), border: StudentPalette.mint.withValues(alpha: 0.3), text: const Color(0xFF67E8F9)),
+      (bg: StudentPalette.indigo.withValues(alpha: 0.12), border: StudentPalette.indigo.withValues(alpha: 0.3), text: const Color(0xFF67E8F9)),
     ];
     final c = colors[index % colors.length];
 
@@ -205,7 +205,7 @@ class StudentStudyHubTab extends ConsumerWidget {
       final events = res.data['events'] as List? ?? [];
       showModalBottomSheet(
         context: context,
-        backgroundColor: StudentPalette.bgDark,
+        backgroundColor: StudentPalette.navy,
         builder: (_) => Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -239,7 +239,7 @@ class StudentStudyHubTab extends ConsumerWidget {
   void _showAttendanceCalculator(BuildContext context, Map<String, double> subjects) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: StudentPalette.bgDark,
+      backgroundColor: StudentPalette.navy,
       isScrollControlled: true,
       builder: (ctx) => Padding(
         padding: const EdgeInsets.all(20),

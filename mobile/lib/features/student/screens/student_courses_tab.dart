@@ -14,98 +14,109 @@ class StudentCoursesTab extends ConsumerWidget {
     final marks = ref.watch(studentMarksProvider);
 
     return enrollments.when(
-      loading: () => const Center(child: CircularProgressIndicator(color: StudentPalette.mint)),
+      loading: () => const Center(child: CircularProgressIndicator(color: StudentPalette.indigo)),
       error: (e, _) => Center(child: Text('Error: $e')),
       data: (list) {
         final examList = exams.valueOrNull ?? [];
         final markList = marks.valueOrNull ?? [];
-
-        if (list.isEmpty) {
-          return const Center(
-            child: Text('No enrolled courses yet', style: TextStyle(color: StudentPalette.textMuted)),
-          );
-        }
 
         var totalPct = 0.0;
         for (final e in list) {
           final cid = e['course'] as int?;
           if (cid != null) totalPct += courseProgressPercent(cid, examList, markList);
         }
-        final avg = list.isEmpty ? 0 : totalPct / list.length;
+        final avg = list.isEmpty ? 0.0 : totalPct / list.length;
 
-        return RefreshIndicator(
-          color: StudentPalette.mint,
-          onRefresh: () async {
-            ref.invalidate(studentEnrollmentsProvider);
-            ref.invalidate(studentExamsProvider);
-            ref.invalidate(studentMarksProvider);
-          },
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            children: [
-              Row(
-                children: [
-                  const Expanded(
-                    child: Text(
-                      'My Courses',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: StudentPalette.textPrimary),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            StudentNavyHeader(
+              title: 'My Courses',
+              subtitle: list.isEmpty
+                  ? 'No enrollments'
+                  : '${list.length} subject(s) · ${avg.round()}% avg progress',
+              chips: [
+                _chip('All', true),
+                _chip('Active', false),
+                _chip('Done', false),
+              ],
+            ),
+            Expanded(
+              child: list.isEmpty
+                  ? const Center(child: Text('No enrolled courses yet', style: TextStyle(color: StudentPalette.textMuted)))
+                  : RefreshIndicator(
+                      color: StudentPalette.indigo,
+                      onRefresh: () async {
+                        ref.invalidate(studentEnrollmentsProvider);
+                        ref.invalidate(studentExamsProvider);
+                        ref.invalidate(studentMarksProvider);
+                      },
+                      child: ListView(
+                        padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
+                        children: list.map((e) {
+                          final cid = e['course'] as int?;
+                          final name = e['course_name']?.toString() ?? 'Course';
+                          final teacher = e['teacher_name']?.toString() ?? 'Faculty';
+                          final pct = cid == null ? 0.0 : courseProgressPercent(cid, examList, markList);
+                          final done = pct >= 100;
+                          final active = pct > 0 && !done;
+                          return StudentCourseRow(
+                            icon: Icons.menu_book_outlined,
+                            iconBg: _iconBg(pct),
+                            iconColor: _barColor(pct),
+                            title: name,
+                            subtitle: '$teacher · ${pct.round()}% complete',
+                            pill: done
+                                ? const StudentPill('Done', type: StudentPillType.green)
+                                : active
+                                    ? const StudentPill('Active', type: StudentPillType.blue)
+                                    : const StudentPill('Upcoming', type: StudentPillType.gray),
+                            percent: pct,
+                            barColor: _barColor(pct),
+                          );
+                        }).toList(),
+                      ),
                     ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: StudentPalette.mint.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '${avg.round()}% avg',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF4ADE80)),
-                    ),
-                  ),
-                ],
-              ),
-              Text(
-                '${list.length} program(s) · progress from published exams',
-                style: const TextStyle(fontSize: 12, color: StudentPalette.textMuted),
-              ),
-              const SizedBox(height: 16),
-              ...list.map((e) {
-                final cid = e['course'] as int?;
-                final name = e['course_name']?.toString() ?? 'Course';
-                final code = e['course_code']?.toString() ?? '';
-                final pct = cid == null ? 0.0 : courseProgressPercent(cid, examList, markList);
-                final done = pct >= 100;
-                return StudentDarkRow(
-                  icon: Icons.school_outlined,
-                  iconBg: _courseColor(pct),
-                  title: name,
-                  subtitle: code.isEmpty ? '${pct.round()}% complete' : '$code · ${pct.round()}% complete',
-                  trailing: done
-                      ? const StudentStatusChip('✓', color: Color(0xFF4ADE80), bg: Color(0x3322C55E))
-                      : pct == 0
-                          ? const StudentStatusChip('—', color: Color(0xFFF87171), bg: Color(0x33EF4444))
-                          : null,
-                  child: StudentProgressBar(percent: pct, color: _barColor(pct)),
-                );
-              }),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );
   }
 
-  Color _courseColor(double pct) {
-    if (pct >= 100) return const Color(0xFF22C55E).withValues(alpha: 0.35);
-    if (pct >= 50) return const Color(0xFF3B82F6).withValues(alpha: 0.35);
-    if (pct > 0) return const Color(0xFFF0A500).withValues(alpha: 0.35);
-    return StudentPalette.teal.withValues(alpha: 0.25);
+  Widget _chip(String label, bool on) {
+    return Expanded(
+      child: Container(
+        margin: const EdgeInsets.only(right: 4),
+        padding: const EdgeInsets.symmetric(vertical: 5),
+        decoration: BoxDecoration(
+          color: on ? StudentPalette.indigo : Colors.white.withValues(alpha: 0.07),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            color: on ? Colors.white : Colors.white38,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _iconBg(double pct) {
+    if (pct >= 100) return StudentPalette.successBg;
+    if (pct >= 50) return StudentPalette.infoBg;
+    if (pct > 0) return StudentPalette.warningBg;
+    return StudentPalette.grayBg;
   }
 
   Color _barColor(double pct) {
-    if (pct >= 100) return const Color(0xFF22C55E);
-    if (pct >= 50) return const Color(0xFF3B82F6);
-    if (pct > 0) return const Color(0xFFF0A500);
-    return StudentPalette.mint;
+    if (pct >= 100) return StudentPalette.success;
+    if (pct >= 50) return StudentPalette.info;
+    if (pct > 0) return const Color(0xFFEA580C);
+    return StudentPalette.textMuted;
   }
 }

@@ -1,5 +1,6 @@
 import { alpha, Box, Paper, Typography, useTheme } from '@mui/material'
 import { ReactNode } from 'react'
+import { instituteBrand } from '../theme/instituteBrand'
 
 type StatCardProps = {
   label: string
@@ -24,8 +25,8 @@ export default function StatCard({ label, value, icon, color, trend, trendUp }: 
         overflow: 'hidden',
         transition: 'transform 0.2s ease, box-shadow 0.2s ease',
         '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: isLight ? '0 12px 32px rgba(15,23,42,0.1)' : '0 12px 32px rgba(0,0,0,0.35)',
+          transform: 'translateY(-1px)',
+          boxShadow: isLight ? `0 8px 24px ${alpha(instituteBrand.navy, 0.08)}` : '0 12px 32px rgba(0,0,0,0.35)',
         },
       }}
     >
@@ -70,9 +71,9 @@ export default function StatCard({ label, value, icon, color, trend, trendUp }: 
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: `linear-gradient(135deg, ${color} 0%, ${alpha(color, 0.75)} 100%)`,
-            color: '#fff',
-            boxShadow: `0 8px 16px ${alpha(color, 0.35)}`,
+            background: alpha(color, 0.12),
+            color: color,
+            border: `0.5px solid ${alpha(color, 0.2)}`,
           }}
         >
           {icon}

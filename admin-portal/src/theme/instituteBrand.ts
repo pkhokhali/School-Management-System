@@ -1,0 +1,30 @@
+/** Shared with mobile app — student_app_all_screens.html */
+export const instituteBrand = {
+  navy: '#1a1a2e',
+  indigo: '#4361ee',
+  indigoLight: '#818cf8',
+  surface: '#f4f6fb',
+  cardBorder: '#e8eaf0',
+  textPrimary: '#1a1a2e',
+  textMuted: '#94a3b8',
+  white: '#ffffff',
+  success: '#16a34a',
+  successBg: '#dcfce7',
+  successText: '#166534',
+  warning: '#d97706',
+  warningBg: '#fef3c7',
+  warningText: '#92400e',
+  error: '#dc2626',
+  errorBg: '#fee2e2',
+  errorText: '#991b1b',
+  info: '#2563eb',
+  infoBg: '#dbeafe',
+  infoText: '#1d4ed8',
+  purple: '#9333ea',
+  purpleBg: '#f3e8ff',
+  purpleText: '#6b21a8',
+  grayBg: '#f1f5f9',
+  grayText: '#475569',
+} as const
+
+export const navyGradient = `linear-gradient(160deg, ${instituteBrand.navy} 0%, ${instituteBrand.indigo} 55%, #5b21b6 100%)`

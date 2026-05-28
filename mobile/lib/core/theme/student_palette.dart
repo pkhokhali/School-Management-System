@@ -1,32 +1,43 @@
 import 'package:flutter/material.dart';
 
-/// Brand palette aligned with student_mobile_app_ux.html
+/// Matches student_app_all_screens.html + admin instituteBrand
 abstract final class StudentPalette {
-  static const bgDark = Color(0xFF0F1E2E);
-  static const bgCard = Color(0x1AFFFFFF);
-  static const textPrimary = Color(0xFFE2EFF8);
-  static const textMuted = Color(0x73FFFFFF);
-  static const teal = Color(0xFF028090);
-  static const mint = Color(0xFF02C39A);
-  static const heroGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [teal, mint],
-  );
+  static const navy = Color(0xFF1A1A2E);
+  static const indigo = Color(0xFF4361EE);
+  static const indigoLight = Color(0xFF818CF8);
+  static const surface = Color(0xFFF4F6FB);
+  static const cardBorder = Color(0xFFE8EAF0);
+  static const textPrimary = Color(0xFF1A1A2E);
+  static const textMuted = Color(0xFF94A3B8);
+  static const white = Color(0xFFFFFFFF);
 
-  static const profileBg = Color(0xFFF4F7FB);
-  static const profileText = Color(0xFF1E3A4F);
-  static const profileMuted = Color(0xFF94A3B8);
+  static const success = Color(0xFF16A34A);
+  static const successBg = Color(0xFFDCFCE7);
+  static const successText = Color(0xFF166534);
+  static const warning = Color(0xFFD97706);
+  static const warningBg = Color(0xFFFEF3C7);
+  static const warningText = Color(0xFF92400E);
+  static const error = Color(0xFFDC2626);
+  static const errorBg = Color(0xFFFEE2E2);
+  static const errorText = Color(0xFF991B1B);
+  static const info = Color(0xFF2563EB);
+  static const infoBg = Color(0xFFDBEAFE);
+  static const infoText = Color(0xFF1D4ED8);
+  static const purple = Color(0xFF9333EA);
+  static const purpleBg = Color(0xFFFDF4FF);
+  static const grayBg = Color(0xFFF1F5F9);
+  static const grayText = Color(0xFF475569);
 
-  static Color attendanceColor(double pct) {
-    if (pct >= 75) return const Color(0xFF4ADE80);
-    if (pct >= 60) return const Color(0xFFFBBF24);
-    return const Color(0xFFF87171);
+  static Color progressColor(double pct) {
+    if (pct >= 75) return success;
+    if (pct >= 60) return warning;
+    return error;
   }
 
-  static Color progressBarColor(double pct) {
-    if (pct >= 75) return const Color(0xFF22C55E);
-    if (pct >= 60) return const Color(0xFFF0A500);
-    return const Color(0xFFEF4444);
-  }
+  static Color attendanceColor(double pct) => progressColor(pct);
+  static Color progressBarColor(double pct) => progressColor(pct);
+
+  static const profileBg = surface;
+  static const profileText = textPrimary;
+  static const profileMuted = textMuted;
 }
